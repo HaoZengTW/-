@@ -1,0 +1,8 @@
+langchain==0.2.15
+langchain_community==0.2.15
+langchain_core==0.2.37
+langchain_openai==0.1.23
+pandas==2.2.2
+python-dotenv==1.0.1
+streamlit==1.38.0
+streamlit_js_eval==0.1.7

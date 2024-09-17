@@ -16,7 +16,7 @@ os.environ["OPENAI_API_KEY"] = os.getenv('OPENAI_API_KEY')
 embeddings = OpenAIEmbeddings()
 
 db = FAISS.load_local(
-    folder_path="../db/gptpdf_db", 
+    folder_path="../db/mathpix", 
     embeddings=embeddings,
     allow_dangerous_deserialization=True)
 retriever=db.as_retriever()

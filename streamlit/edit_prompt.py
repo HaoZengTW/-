@@ -21,7 +21,7 @@ os.environ["LANGCHAIN_PROJECT"] = os.getenv('LANGCHAIN_PROJECT')
 embeddings = OpenAIEmbeddings()
 
 db = FAISS.load_local(
-    folder_path="../db/gptpdf_db", 
+    folder_path="../db/mathpix", 
     embeddings=embeddings,
     allow_dangerous_deserialization=True)
 retriever=db.as_retriever()

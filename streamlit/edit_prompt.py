@@ -13,6 +13,10 @@ import random
 
 load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv('OPENAI_API_KEY')
+os.environ['LANGCHAIN_API_KEY'] = os.getenv('LANGCHAIN_API_KEY')
+os.environ['LANGCHAIN_TRACING_V2'] = os.getenv('LANGCHAIN_TRACING_V2')
+os.environ["LANGCHAIN_ENDPOINT"] = "https://api.smith.langchain.com"
+os.environ["LANGCHAIN_PROJECT"] = os.getenv('LANGCHAIN_PROJECT')
 
 embeddings = OpenAIEmbeddings()
 
@@ -22,20 +26,20 @@ db = FAISS.load_local(
     allow_dangerous_deserialization=True)
 retriever=db.as_retriever()
 
-def retiever_past_qa(question):
+qa_db = FAISS.load_local(
+    folder_path="../db/qapair_db", 
+    embeddings=embeddings,
+    allow_dangerous_deserialization=True)
+
+def retiever_past_qa(question, threshold):
     res=[]
-    connection = SQLiteVSS.create_connection(db_file="../db/lite.db")
-    lite_db = SQLiteVSS(table="qa_vector_store", embedding=embeddings, connection=connection)
-    for result in lite_db.similarity_search_with_score(question):
-        if result[1]<0.2:
+    for result in qa_db.similarity_search_with_score(question):
+        if result[1]<threshold:
             res.append(result[0])
     return res
 
 
-template = """You are a helpful assistant that generates multiple search queries based on a single input query. \n
-Generate multiple search queries related to: {question} \n
-Output (4 queries):"""
-prompt_rag_fusion = ChatPromptTemplate.from_template(template)
+
 
 def reciprocal_rank_fusion(results: list[list], k=60):
     fused_scores = {}
@@ -54,16 +58,8 @@ def reciprocal_rank_fusion(results: list[list], k=60):
     # return only documents
     return [x[0] for x in reranked_results[:8]]
 
-generate_queries = (
-    prompt_rag_fusion 
-    | ChatOpenAI(temperature=0)
-    | StrOutputParser() 
-    | (lambda x: x.split("\n"))
-    | retriever.map()
-    | reciprocal_rank_fusion
-)
 
-parallelChain = RunnableParallel(context=generate_queries,question=RunnablePassthrough(),past_qa=retiever_past_qa)
+
 
 
 
@@ -77,6 +73,8 @@ llm = ChatOpenAI(temperature=0, model_name="gpt-4o")
 st.title('Rag Fusion with stream function')
 
 with st.form('my_form'):
+    score = st.slider("ＱＡ Pair 評分標準，數字越小越嚴謹", 0, 10, 2)/10
+    k = st.slider("數值越大檢索越多文獻", 1, 10, 4)
     template = st.text_area('Prompt:', """請參考過往問答以及提供文獻回答問題．
 若有過往問答，請先考量過往問答為主，並參考文獻為輔．
 若無過往問答，文獻也未提及，請回答不知道，不要自行生成回答。
@@ -91,8 +89,25 @@ with st.form('my_form'):
 """)
     text = st.text_area('Enter text:', '')
     submitted = st.form_submit_button('Submit')
+    def retiever_past_qa_wrapper(question):
+        return retiever_past_qa(question, score)
+    
     if submitted:
         prompt = ChatPromptTemplate.from_template(template)
+        template = """You are a helpful assistant that generates multiple search queries based on a single input query. \n
+        Generate multiple search queries related to: {question} \n
+        Output ("""+ f"{k}" +""" queries):"""
+        prompt_rag_fusion = ChatPromptTemplate.from_template(template)
+        generate_queries = (
+            prompt_rag_fusion 
+            | ChatOpenAI(temperature=0)
+            | StrOutputParser() 
+            | (lambda x: x.split("\n"))
+            | retriever.map()
+            | reciprocal_rank_fusion
+        )
+        parallelChain = RunnableParallel(context=generate_queries,question=RunnablePassthrough(),past_qa=retiever_past_qa_wrapper)
+
         fusionChain = parallelChain | prompt | llm | StrOutputParser()
         st.write_stream(fusionChain.stream(text))
         

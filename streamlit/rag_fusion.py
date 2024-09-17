@@ -21,11 +21,15 @@ db = FAISS.load_local(
     allow_dangerous_deserialization=True)
 retriever=db.as_retriever()
 
+qa_db = FAISS.load_local(
+    folder_path="../db/qapair_db", 
+    embeddings=embeddings,
+    allow_dangerous_deserialization=True)
+
 def retiever_past_qa(question):
     res=[]
-    connection = SQLiteVSS.create_connection(db_file="../db/lite.db")
-    lite_db = SQLiteVSS(table="qa_vector_store", embedding=embeddings, connection=connection)
-    for result in lite_db.similarity_search_with_score(question):
+    
+    for result in qa_db.similarity_search_with_score(question):
         if result[1]<0.2:
             res.append(result[0])
     return res

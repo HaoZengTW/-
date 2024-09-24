@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 from langchain_community.vectorstores import FAISS
 from langchain_community.vectorstores import SQLiteVSS
 import streamlit as st
-
+import sqlite3
 from langchain.load import dumps, loads
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
@@ -68,18 +68,18 @@ generate_queries = (
 
 parallelChain = RunnableParallel(context=generate_queries,question=RunnablePassthrough(),past_qa=retiever_past_qa)
 
-template = """請參考過往問答以及提供文獻回答問題．
-若有過往問答，請先考量過往問答為主，並參考文獻為輔．
-若無過往問答，文獻也未提及，請回答不知道，不要自行生成回答。
+def get_prompt():
+    conn = sqlite3.connect('../db/lite.db')
+    cur = conn.cursor()
+    cur.execute('SELECT prompt FROM prompts WHERE activate = 1')
+    record = cur.fetchone()
+    conn.close()
+    if record is not None:
+        return record[0]
+    else:
+        return None
 
-過往問答：
-{past_qa}
-
-文獻：
-{context}
-
-問題: {question}
-"""
+template = get_prompt()
 
 prompt = ChatPromptTemplate.from_template(template)
 

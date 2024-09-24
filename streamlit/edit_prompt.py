@@ -9,7 +9,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough,RunnableParallel
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-import random
+import sqlite3
 
 load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv('OPENAI_API_KEY')
@@ -57,7 +57,16 @@ def reciprocal_rank_fusion(results: list[list], k=60):
 
 
 
-
+def get_prompt():
+    conn = sqlite3.connect('../db/lite.db')
+    cur = conn.cursor()
+    cur.execute('SELECT prompt FROM prompts WHERE activate = 1')
+    record = cur.fetchone()
+    conn.close()
+    if record is not None:
+        return record[0]
+    else:
+        return None
 
 
 
@@ -69,20 +78,10 @@ llm = ChatOpenAI(temperature=0, model_name="gpt-4o")
 st.title('Rag Fusion with stream function')
 
 with st.form('my_form'):
+    saved = st.form_submit_button('保存prompt')
     score = st.slider("ＱＡ Pair 評分標準，數字越小越嚴謹", 0, 10, 2)/10
     k = st.slider("數值越大檢索越多文獻", 1, 10, 4)
-    template = st.text_area('Prompt:', """請參考過往問答以及提供文獻回答問題．
-若有過往問答，請先考量過往問答為主，並參考文獻為輔．
-若無過往問答，文獻也未提及，請回答不知道，不要自行生成回答。
-
-過往問答：
-{past_qa}
-
-文獻：
-{context}
-
-問題: {question}
-""")
+    template = st.text_area('Prompt:', get_prompt())
     text = st.text_area('Enter text:', '')
     submitted = st.form_submit_button('Submit')
     def retiever_past_qa_wrapper(question):
@@ -106,6 +105,26 @@ with st.form('my_form'):
 
         fusionChain = parallelChain | prompt | llm | StrOutputParser()
         st.write_stream(fusionChain.stream(text))
-        
+    
+    if saved:
+        conn = sqlite3.connect('../db/lite.db')
+        cursor = conn.cursor()
+        table_query = """
+        UPDATE prompts SET activate = false WHERE 1=1;
+        """
+        cursor.execute(table_query)
+        conn.commit()
+        insert_query = f"""
+        INSERT INTO prompts (prompt, activate)
+        VALUES (?, ?)
+        """
+        # 執行插入語句
+        cursor.execute(insert_query, (template, True))
+    
+        # 提交更改並關閉連接
+        conn.commit()
+        conn.close()
+        st.success('PROMPT 已更新')
+
         
         

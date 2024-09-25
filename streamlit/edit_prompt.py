@@ -2,7 +2,6 @@ import streamlit as st
 import os
 from dotenv import load_dotenv
 from langchain_community.vectorstores import FAISS
-from langchain.vectorstores import SQLiteVSS
 
 from langchain.load import dumps, loads
 from langchain_core.output_parsers import StrOutputParser

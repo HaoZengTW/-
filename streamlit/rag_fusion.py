@@ -33,7 +33,6 @@ with st.form('my_form'):
             img_list = []
             st.write_stream(fusionChain.stream(text))
             resources = db.similarity_search(text)
-            print(resources)
             if len(resources)>0:
                 with st.popover("Open Resources",use_container_width=True):
                     display_list={'標準維護程序書.pdf':[],'標準操作程序書.pdf':[]}
@@ -41,10 +40,10 @@ with st.form('my_form'):
                         metadata = doc.metadata
                         st.write(f"""參考資料{idx+1}  """)
                         st.write(f"""來源：『{metadata.get('file')}』 """)
-                        
-                        
-                        if metadata['type']=="image":
+                        if metadata['type']!="table":
                             st.write(doc.page_content)
+                            
+                        if metadata['type']=="image":
                             st.write('來源圖片：')
                             st.image(base64.b64decode(metadata['original_content']))
                     

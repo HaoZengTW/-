@@ -1,8 +1,7 @@
-# 架構
-![alt text](image.png)
-# 安裝
-pip install -r requirements.txt
 
+# 安裝環境
+    pip install -r requirements.txt
+    python sqliteInit.py
 # 執行
     cd streamlit
     streamlit run main.py

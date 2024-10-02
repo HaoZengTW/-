@@ -38,18 +38,20 @@ with st.form('my_form'):
                     display_list={'標準維護程序書.pdf':[],'標準操作程序書.pdf':[]}
                     for idx, doc in enumerate(resources):
                         metadata = doc.metadata
-                        st.write(f"""參考資料{idx+1}  """)
-                        st.write(f"""來源：『{metadata.get('file')}』 """)
+                        if idx>0:
+                            st.divider()
+                        st.subheader(f"""參考資料 {idx+1}  """)
+                        st.subheader(f"""來源：『{metadata.get('file')}』 """, divider=True)
                         if metadata['type']!="table":
                             st.write(doc.page_content)
                             
                         if metadata['type']=="image":
-                            st.write('來源圖片：')
+                            st.subheader('來源圖片：')
                             st.image(base64.b64decode(metadata['original_content']))
                     
                         else:
                             if metadata.get('page') not in display_list[metadata.get('file')]:
-                                st.write('原始內容：')
+                                st.subheader('原始內容：')
                                 pdf_viewer(
                                 f"""../pdf/{metadata.get('file')}""",
                                 width=700,

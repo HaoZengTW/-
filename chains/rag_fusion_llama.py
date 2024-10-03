@@ -28,7 +28,8 @@ qa_db = FAISS.load_local(
 
 def retiever_past_qa(question):
     res=[]
-    
+    if type(question) is dict:
+        question = question['question']
     for result in qa_db.similarity_search_with_score(question):
         if result[1]<0.2:
             res.append(result[0])

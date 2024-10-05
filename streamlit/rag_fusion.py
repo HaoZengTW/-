@@ -3,7 +3,7 @@ import streamlit as st
 import sys
 import os
 sys.path.append('..')
-from chains.rag_fusion_gpt import fusionChain
+from chains.fusion_gpt import combine_chain
 from dotenv import load_dotenv
 from streamlit_pdf_viewer import pdf_viewer
 from langchain.vectorstores import FAISS
@@ -15,12 +15,17 @@ import base64
 load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv('OPENAI_API_KEY')
 
+def k_value():
+    with open('k.txt', 'r') as file:
+        # 讀取文件內容並返回
+        content = file.read()
+    return int(content)
 
 db = FAISS.load_local(
-    folder_path="../db/unstructure_with_image", 
+    folder_path="../db/combine", 
     embeddings=OpenAIEmbeddings(),
     allow_dangerous_deserialization=True)
-retriever=db.as_retriever()
+retriever=db.as_retriever(search_kwargs={"k": k_value()})
 
 st.title('Rag Fusion with stream function')
 
@@ -31,8 +36,8 @@ with st.form('my_form'):
         if len(text.strip())>0:
             docs = {}
             img_list = []
-            st.write_stream(fusionChain.stream(text))
-            resources = db.similarity_search(text)
+            st.write_stream(combine_chain.stream(text))
+            resources = retriever.invoke(text)
             if len(resources)>0:
                 with st.popover("Open Resources",use_container_width=True):
                     display_list={'標準維護程序書.pdf':[],'標準操作程序書.pdf':[]}
@@ -40,10 +45,6 @@ with st.form('my_form'):
                         metadata = doc.metadata
                         if idx>0:
                             st.divider()
-                        st.subheader(f"""參考資料 {idx+1}  """)
-                        st.subheader(f"""來源：『{metadata.get('file')}』 """, divider=True)
-                        if metadata['type']!="table":
-                            st.write(doc.page_content)
                             
                         if metadata['type']=="image":
                             st.subheader('來源圖片：')
@@ -51,7 +52,7 @@ with st.form('my_form'):
                     
                         else:
                             if metadata.get('page') not in display_list[metadata.get('file')]:
-                                st.subheader('原始內容：')
+                                st.subheader(f"""來源：『{metadata.get('file')}』 """, divider=True)
                                 pdf_viewer(
                                 f"""../pdf/{metadata.get('file')}""",
                                 width=700,

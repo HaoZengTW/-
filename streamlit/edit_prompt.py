@@ -19,6 +19,17 @@ import sqlite3
 load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv('OPENAI_API_KEY')
 
+def k_value():
+    with open('k.txt', 'r') as file:
+        # 讀取文件內容並返回
+        content = file.read()
+    return int(content)
+
+def k_save(k_value):
+    with open('k.txt', 'w') as file:
+        # 讀取文件內容並返回
+        file.write(str(k_value))
+
 embeddings = OpenAIEmbeddings()
 
 db = FAISS.load_local(
@@ -85,7 +96,7 @@ st.title('Rag Fusion with stream function')
 with st.form('my_form'):
     saved = st.form_submit_button('保存prompt')
     score = st.slider("ＱＡ Pair 評分標準，數字越小越嚴謹", 0, 10, 2)/10
-    k = st.slider("數值越大檢索越多文獻", 1, 10, 4)
+    k = st.slider("數值越大檢索越多文獻", 1, 10, k_value())
     template = st.text_area('Prompt:', get_prompt())
     text = st.text_area('Enter text:', '')
     submitted = st.form_submit_button('Submit')
@@ -127,6 +138,7 @@ with st.form('my_form'):
                 st.write_stream(llamachain.stream(text))
 
     if saved:
+        k_save(k)
         conn = sqlite3.connect('../db/lite.db')
         cursor = conn.cursor()
         table_query = """

@@ -3,7 +3,7 @@ import streamlit as st
 import sys
 import os
 sys.path.append('..')
-from chains.fusion_gpt import combine_chain
+from chains.fusion_gpt_with_filter import combine_chain
 from dotenv import load_dotenv
 from streamlit_pdf_viewer import pdf_viewer
 from langchain.vectorstores import FAISS
@@ -14,6 +14,45 @@ import base64
 
 load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv('OPENAI_API_KEY')
+
+def contains_any_phrase(string, phrase_list):
+    # 將清單中的詞組使用逗號分隔轉為列表
+    phrases = phrase_list.split(',')
+    
+    # 檢查是否有任一詞組存在於字串中
+    for phrase in phrases:
+        if phrase in string:
+            return True
+    return False
+
+def filtered_retiever(question):
+    if contains_any_phrase(question,smp_key_value()):
+        db_path = "../db/only_table"
+    elif contains_any_phrase(question,sop_key_value()):
+        db_path = "../db/only_image"
+    else:
+        db_path = "../db/combine"
+    db = FAISS.load_local(
+        folder_path=db_path, 
+        embeddings=OpenAIEmbeddings(),
+        allow_dangerous_deserialization=True)
+    retriever=db.as_retriever(search_kwargs={"k": k_value(),"fetch_k":k_value()*2})
+    res = retriever.invoke(question)
+    print(res)
+    
+    return res
+
+def smp_key_value():
+    with open('smpkeyword.txt', 'r') as file:
+        # 讀取文件內容並返回
+        content = file.read()
+    return content
+
+def sop_key_value():
+    with open('sopkeyword.txt', 'r') as file:
+        # 讀取文件內容並返回
+        content = file.read()
+    return content
 
 def k_value():
     with open('k.txt', 'r') as file:
@@ -37,7 +76,7 @@ with st.form('my_form'):
             docs = {}
             img_list = []
             st.write_stream(combine_chain.stream(text))
-            resources = retriever.invoke(text)
+            resources = filtered_retiever(text)
             if len(resources)>0:
                 with st.popover("Open Resources",use_container_width=True):
                     display_list={'標準維護程序書.pdf':[],'標準操作程序書.pdf':[]}

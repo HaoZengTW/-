@@ -29,6 +29,28 @@ def k_save(k_value):
     with open('k.txt', 'w') as file:
         # 讀取文件內容並返回
         file.write(str(k_value))
+        
+def smp_key_value():
+    with open('smpkeyword.txt', 'r') as file:
+        # 讀取文件內容並返回
+        content = file.read()
+    return content
+
+def smp_key_save(keywords):
+    with open('smpkeyword.txt', 'w') as file:
+        # 讀取文件內容並返回
+        file.write(keywords)
+        
+def sop_key_value():
+    with open('sopkeyword.txt', 'r') as file:
+        # 讀取文件內容並返回
+        content = file.read()
+    return content
+
+def sop_key_save(keywords):
+    with open('sopkeyword.txt', 'w') as file:
+        # 讀取文件內容並返回
+        file.write(keywords)
 
 embeddings = OpenAIEmbeddings()
 
@@ -97,6 +119,9 @@ with st.form('my_form'):
     saved = st.form_submit_button('保存prompt')
     score = st.slider("ＱＡ Pair 評分標準，數字越小越嚴謹", 0, 10, 2)/10
     k = st.slider("數值越大檢索越多文獻", 1, 10, k_value())
+    smp_keywords = st.text_area('異常問題關鍵字 請以,分隔', smp_key_value())
+    sop_keywords = st.text_area('操作流程問題關鍵字 請以,分隔', sop_key_value())
+
     template = st.text_area('Prompt:', get_prompt())
     text = st.text_area('Enter text:', '')
     submitted = st.form_submit_button('Submit')
@@ -139,6 +164,8 @@ with st.form('my_form'):
 
     if saved:
         k_save(k)
+        sop_key_save(sop_keywords)
+        smp_key_save(smp_keywords)
         conn = sqlite3.connect('../db/lite.db')
         cursor = conn.cursor()
         table_query = """

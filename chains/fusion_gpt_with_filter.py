@@ -18,13 +18,13 @@ def k_value():
     return int(content)
 
 def smp_key_value():
-    with open('smpkeyword.txt', 'r') as file:
+    with open('../streamlit/smpkeyword.txt', 'r') as file:
         # 讀取文件內容並返回
         content = file.read()
     return content
 
 def sop_key_value():
-    with open('sopkeyword.txt', 'r') as file:
+    with open('../streamlit/sopkeyword.txt', 'r') as file:
         # 讀取文件內容並返回
         content = file.read()
     return content
@@ -48,6 +48,8 @@ def contains_any_phrase(string, phrase_list):
     return False
 
 def filtered_retiever(question):
+    if type(question) is dict:
+        question = question['question']
     if contains_any_phrase(question,smp_key_value()):
         db_path = "../db/only_table"
     elif contains_any_phrase(question,sop_key_value()):

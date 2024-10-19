@@ -3,11 +3,7 @@ from langserve import add_routes
 import sys
 sys.path.append('..')
 
-from chains.rag_fusion_gpt import fusionChain
-from chains.rag_fusion_llama import fusionChain as llamachain
-from chains.rag_fusion_gpt_without_splits import fusionChain as fc_without
-from chains.rag_fusion_gpt_unstructure_without_image import fusionChain as un_without_img
-from chains.rag_fusion_gpt_unstructure_with_image import fusionChain as un_with_img
+from chains.fusion_gpt_with_filter import combine_chain
 
 
 app = FastAPI(
@@ -18,31 +14,11 @@ app = FastAPI(
 
 add_routes(
     app,
-    fusionChain,
-    path="/fusion"
-)
-add_routes(
-    app,
-    llamachain,
-    path="/fusion_llama"
-)
-add_routes(
-    app,
-    fc_without,
-    path="/fusion_without_text_split"
-)
-add_routes(
-    app,
-    un_without_img,
-    path="/un_without_img"
-)
-add_routes(
-    app,
-    un_with_img,
-    path="/un_with_img"
+    combine_chain,
+    path="/gpt_service"
 )
 
 if __name__ == "__main__":
     import uvicorn
     
-    uvicorn.run(app, host="localhost", port=8052)
+    uvicorn.run(app, host="0.0.0.0", port=8052)

@@ -38,18 +38,17 @@ def filtered_retiever(question):
         allow_dangerous_deserialization=True)
     retriever=db.as_retriever(search_kwargs={"k": k_value(),"fetch_k":k_value()*2})
     res = retriever.invoke(question)
-    print(res)
     
     return res
 
 def smp_key_value():
-    with open('smpkeyword.txt', 'r') as file:
+    with open('../streamlit/smpkeyword.txt', 'r') as file:
         # 讀取文件內容並返回
         content = file.read()
     return content
 
 def sop_key_value():
-    with open('sopkeyword.txt', 'r') as file:
+    with open('../streamlit/sopkeyword.txt', 'r') as file:
         # 讀取文件內容並返回
         content = file.read()
     return content

@@ -15,7 +15,8 @@ app = FastAPI(
 add_routes(
     app,
     combine_chain,
-    path="/gpt_service"
+    path="/gpt_service",
+    enabled_endpoints=("invoke", "stream")
 )
 
 if __name__ == "__main__":

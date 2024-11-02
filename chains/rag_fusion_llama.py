@@ -6,7 +6,7 @@ from langchain_core.runnables import RunnablePassthrough,RunnableParallel
 from langchain_ollama import OllamaEmbeddings, OllamaLLM
 
 embeddings = OllamaEmbeddings(
-    model="hf.co/lagoon999/Chuxin-Embedding-Q8_0-GGUF", base_url="http://llm_network:11434"
+    model="hf.co/lagoon999/Chuxin-Embedding-Q8_0-GGUF", base_url="http://ollama:11434"
 )
 
 def k_value():
@@ -95,7 +95,7 @@ template = get_prompt()
 prompt = ChatPromptTemplate.from_template(template)
 
 # llm = OllamaLLM(model="llama3.1:8b")
-llm = OllamaLLM(model="llama3.1:8b", base_url="http://llm_network:11434")
+llm = OllamaLLM(model="llama3.1:8b", base_url="http://ollama:11434")
 
 fusionChain = parallelChain | prompt | llm | StrOutputParser()
 main_chain = RunnableParallel(answer =fusionChain, question =RunnablePassthrough() ,content = filtered_retiever)

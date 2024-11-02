@@ -11,7 +11,7 @@ from langchain_groq import ChatGroq
 from langchain_ollama import OllamaEmbeddings, OllamaLLM
 
 embeddings = OllamaEmbeddings(
-    model="hf.co/lagoon999/Chuxin-Embedding-Q8_0-GGUF", base_url="http://llm_network:11434"
+    model="hf.co/lagoon999/Chuxin-Embedding-Q8_0-GGUF", base_url="http://ollama:11434"
 )
 
 load_dotenv()

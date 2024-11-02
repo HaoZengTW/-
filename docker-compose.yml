@@ -49,4 +49,4 @@ networks:
   my_network:
     driver: bridge
   llm_network:
-    driver: bridge
+    external: true 

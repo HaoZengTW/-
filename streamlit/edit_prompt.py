@@ -9,10 +9,10 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough,RunnableParallel
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from chains.rag_fusion_gpt import fusionChain
-from chains.rag_fusion_llama import fusionChain as llamachain
-from chains.rag_fusion_gpt_without_splits import fusionChain as fc_without
-from chains.rag_fusion_gpt_unstructure_without_image import fusionChain as un_without_img
-from chains.rag_fusion_gpt_unstructure_with_image import fusionChain as un_with_img
+from chains.fusion_gpt_with_filter import combine_chain
+from chains.rag_fusion_llama import combine_chain as llamachain
+from chains.rag_fusion_llama_local import combine_chain as llamachain_q
+from chains.rag_fusion_llama_3_2_3b import combine_chain as llamachain_3_2_3b
 
 import sqlite3
 
@@ -145,22 +145,16 @@ with st.form('my_form'):
         parallelChain = RunnableParallel(context=generate_queries,question=RunnablePassthrough(),past_qa=retiever_past_qa_wrapper)
 
         fusionChain = parallelChain | prompt | llm | StrOutputParser()
-        st.write_stream(fusionChain.stream(text))
-        with st.popover("compare",use_container_width=True):
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.subheader("GPT-4o", divider=True)
-                st.write_stream(fusionChain.stream(text))
-                st.subheader("without splits", divider=True)
-                st.write_stream(fc_without.stream(text))
-            with col2:
-                st.subheader("GPT-4o unstructure without image", divider=True)
-                st.write_stream(un_without_img.stream(text))
-                st.subheader("with image", divider=True)
-                st.write_stream(un_with_img.stream(text))
-            with col3:
-                st.subheader("llama-3.1-8b", divider=True)
-                st.write_stream(llamachain.stream(text))
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.subheader("GPT-4o", divider=True)
+            st.write_stream(combine_chain.stream(text))
+        with col2:
+            st.subheader("llama-3.1-8b", divider=True)
+            st.write_stream(llamachain.stream(text))
+        with col3:
+            st.subheader("llama-3.2-3b", divider=True)
+            st.write_stream(llamachain_3_2_3b.stream(text))
 
     if saved:
         k_save(k)

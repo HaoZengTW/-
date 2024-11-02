@@ -1,0 +1,48 @@
+version: "1.0"
+
+services:
+  gptservice:
+    image: gptservice
+    ports:
+      - 8501:8501
+    restart: always
+  gpt_api:
+    image: gpt_api
+    ports:
+      - 8052:8052
+    restart: always
+  rain_db:
+    image: water_db
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      TZ: Asia/Taipei
+    networks:
+      - my_network
+    restart: always
+  scrawling_web:
+    image: scrawling_web
+    depends_on:
+      - rain_db
+    volumes:
+      - shared-static:/app/static
+    networks:
+      - my_network
+    restart: always
+  websiteserver:
+    image: django-mysql-app
+    ports:
+      - 8006:8006
+    depends_on:
+      - rain_db
+    volumes:
+      - shared-static:/app/static
+    networks:
+      - my_network
+    restart: always
+volumes:
+  shared-static:    
+networks:
+  my_network:
+    driver: bridge

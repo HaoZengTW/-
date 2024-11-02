@@ -11,6 +11,6 @@ WORKDIR /app
 
 RUN pip install -r requirements.txt
 
-WORKDIR /app/api_service
+WORKDIR /app/streamlit
 
-CMD python app.py
+CMD streamlit run main.py

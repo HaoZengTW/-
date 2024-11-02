@@ -104,14 +104,14 @@ template = get_prompt()
 
 prompt = ChatPromptTemplate.from_template(template)
 
-llm = ChatGroq(
-    model="llama-3.2-3b-preview",
-    temperature=0,
-    max_tokens=None,
-    timeout=None,
-    max_retries=2,
-)
-
+# llm = ChatGroq(
+#     model="llama-3.2-3b-preview",
+#     temperature=0,
+#     max_tokens=None,
+#     timeout=None,
+#     max_retries=2,
+# )
+llm = OllamaLLM(model="llama3.2:3b", base_url="http://ollama:11434")
 fusionChain = parallelChain | prompt | llm | StrOutputParser()
 main_chain = RunnableParallel(answer =fusionChain, question =RunnablePassthrough() ,content = filtered_retiever)
 

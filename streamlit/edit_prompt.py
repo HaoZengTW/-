@@ -150,12 +150,12 @@ with st.form('my_form'):
             st.subheader("GPT-4o", divider=True)
             st.write_stream(combine_chain.stream(text))
         with col2:
-            st.subheader("llama-3.1-8b", divider=True)
-            st.write_stream(llamachain.stream(text))
-        with col3:
             st.subheader("llama-3.2-3b", divider=True)
             st.write_stream(llamachain_3_2_3b.stream(text))
-
+        with col3:
+            st.subheader("llama-3.1-8b", divider=True)
+            st.write_stream(llamachain.stream(text))
+            
     if saved:
         k_save(k)
         sop_key_save(sop_keywords)

@@ -5,6 +5,8 @@ services:
     image: gptservice
     ports:
       - 8501:8501
+    networks:
+      - llm_network
     restart: always
   gpt_api:
     image: gpt_api
@@ -26,7 +28,7 @@ services:
     depends_on:
       - rain_db
     volumes:
-      - shared-static:/app/static
+      - sharedstatic:/app/static
     networks:
       - my_network
     restart: always
@@ -37,12 +39,14 @@ services:
     depends_on:
       - rain_db
     volumes:
-      - shared-static:/app/static
+      - sharedstatic:/app/static
     networks:
       - my_network
     restart: always
 volumes:
-  shared-static:    
+  sharedstatic:    
 networks:
   my_network:
+    driver: bridge
+  llm_network:
     driver: bridge

@@ -10,9 +10,9 @@ from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_groq import ChatGroq
 from langchain_ollama import OllamaEmbeddings, OllamaLLM
 
-embeddings = OllamaEmbeddings(
-    model="hf.co/lagoon999/Chuxin-Embedding-Q8_0-GGUF",
-)
+# embeddings = OllamaEmbeddings(
+#     model="hf.co/lagoon999/Chuxin-Embedding-Q8_0-GGUF",
+# )
 
 load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv('OPENAI_API_KEY')
@@ -36,7 +36,7 @@ def sop_key_value():
         content = file.read()
     return content
 
-# embeddings = OpenAIEmbeddings()
+embeddings = OpenAIEmbeddings()
 
 
 qa_db = FAISS.load_local(
@@ -58,11 +58,11 @@ def filtered_retiever(question):
     if type(question) is dict:
         question = question['question']
     if contains_any_phrase(question,smp_key_value()):
-        db_path = "../db/Chuxin_only_table"
+        db_path = "../db/only_table"
     elif contains_any_phrase(question,sop_key_value()):
-        db_path = "../db/Chuxin_only_image"
+        db_path = "../db/only_image"
     else:
-        db_path = "../db/Chuxin"
+        db_path = "../db/combine"
     db = FAISS.load_local(
         folder_path=db_path, 
         embeddings=embeddings,

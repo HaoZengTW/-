@@ -69,13 +69,14 @@ def filtered_retiever(question):
         allow_dangerous_deserialization=True)
     retriever=db.as_retriever(search_kwargs={"k": 4,"fetch_k":8})
     
-    if contains_any_phrase(question,sop_key_value()):
+    if contains_any_phrase(question,smp_key_value()):
+        return retriever.invoke(question)
+    else:
         res=[]
         for i in retriever.invoke(question):
             res.append(i.page_content)
         return res
-    else:
-        return retriever.invoke(question)
+        
 
 def retiever_past_qa(question):
     res=[]
@@ -105,7 +106,7 @@ template = get_prompt()
 prompt = ChatPromptTemplate.from_template(template)
 
 llm = ChatGroq(
-    model="llama-3.1-8b-instant",
+    model="llama-3.1-70b-versatile",
     temperature=0,
     max_tokens=None,
     timeout=None,

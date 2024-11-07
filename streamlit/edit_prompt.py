@@ -10,9 +10,7 @@ from langchain_core.runnables import RunnablePassthrough,RunnableParallel
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from chains.rag_fusion_gpt import fusionChain
 from chains.fusion_gpt_with_filter import combine_chain
-from chains.rag_fusion_llama import combine_chain as llamachain
 from chains.rag_fusion_llama_local import combine_chain as llamachain_q
-from chains.rag_fusion_llama_3_2_3b import combine_chain as llamachain_3_2_3b
 
 import sqlite3
 
@@ -145,16 +143,14 @@ with st.form('my_form'):
         parallelChain = RunnableParallel(context=generate_queries,question=RunnablePassthrough(),past_qa=retiever_past_qa_wrapper)
 
         fusionChain = parallelChain | prompt | llm | StrOutputParser()
-        col1, col2, col3 = st.columns(3)
+        col1, col2 = st.columns(2)
         with col1:
             st.subheader("GPT-4o", divider=True)
             st.write_stream(combine_chain.stream(text))
         with col2:
-            st.subheader("llama-3.2-3b", divider=True)
-            st.write_stream(llamachain_3_2_3b.stream(text))
-        with col3:
-            st.subheader("llama-3.1-8b", divider=True)
-            st.write_stream(llamachain.stream(text))
+            st.subheader("llama-3.1-70b", divider=True)
+            st.write_stream(llamachain_q.stream(text))
+        
             
     if saved:
         k_save(k)

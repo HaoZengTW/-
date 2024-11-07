@@ -5,13 +5,15 @@ services:
     image: gptservice
     ports:
       - 8501:8501
-    networks:
-      - llm_network
+    volumes:
+      - sharedstatics:/app/streamlit
     restart: always
   gpt_api:
     image: gpt_api
     ports:
       - 8052:8052
+    volumes:
+      - sharedstatics:/app/streamlit
     restart: always
   rain_db:
     image: water_db
@@ -45,8 +47,7 @@ services:
     restart: always
 volumes:
   sharedstatic:    
+  sharedstatics:
 networks:
   my_network:
     driver: bridge
-  llm_network:
-    external: true 

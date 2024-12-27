@@ -1,4 +1,3 @@
-
 import streamlit as st
 import sys
 import os
@@ -10,10 +9,11 @@ from langchain.vectorstores import FAISS
 from langchain.embeddings import OpenAIEmbeddings
 import base64
 
-
-
 load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv('OPENAI_API_KEY')
+SMP_KEYS = os.getenv('SMP_KEYS')
+SOP_KEYS = os.getenv('SOP_KEYS')
+K_VALUES = os.getenv('K_VALUES')
 
 def contains_any_phrase(string, phrase_list):
     # 將清單中的詞組使用逗號分隔轉為列表
@@ -26,9 +26,9 @@ def contains_any_phrase(string, phrase_list):
     return False
 
 def filtered_retiever(question):
-    if contains_any_phrase(question,smp_key_value()):
+    if contains_any_phrase(question,SMP_KEYS):
         db_path = "../db/only_table"
-    elif contains_any_phrase(question,sop_key_value()):
+    elif contains_any_phrase(question,SOP_KEYS):
         db_path = "../db/only_image"
     else:
         db_path = "../db/combine"
@@ -36,34 +36,16 @@ def filtered_retiever(question):
         folder_path=db_path, 
         embeddings=OpenAIEmbeddings(),
         allow_dangerous_deserialization=True)
-    retriever=db.as_retriever(search_kwargs={"k": k_value(),"fetch_k":k_value()*2})
+    retriever=db.as_retriever(search_kwargs={"k": K_VALUES,"fetch_k":K_VALUES*2})
     res = retriever.invoke(question)
     
     return res
-
-def smp_key_value():
-    with open('../streamlit/smpkeyword.txt', 'r') as file:
-        # 讀取文件內容並返回
-        content = file.read()
-    return content
-
-def sop_key_value():
-    with open('../streamlit/sopkeyword.txt', 'r') as file:
-        # 讀取文件內容並返回
-        content = file.read()
-    return content
-
-def k_value():
-    with open('k.txt', 'r') as file:
-        # 讀取文件內容並返回
-        content = file.read()
-    return int(content)
 
 db = FAISS.load_local(
     folder_path="../db/combine", 
     embeddings=OpenAIEmbeddings(),
     allow_dangerous_deserialization=True)
-retriever=db.as_retriever(search_kwargs={"k": k_value()})
+retriever=db.as_retriever(search_kwargs={"k": K_VALUES})
 
 st.title('Rag Fusion with stream function')
 
